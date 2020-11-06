@@ -1,0 +1,85 @@
+view.connectToInspector && view.connectToInspector(rootElement, inspectorIpAddress);
+
+function parseWindowLine(line) {
+  const caption = line.match(/\w+$/);
+  const [, w] = line.match(/w(\d+)/) || [];
+  const [, h] = line.match(/h(\d+)/) || [];
+  stdout.println("caption:", caption, "w:", w, "h:", h);
+  const scriptFile = Stream.openFile("center.tis");
+  var script = "";
+  while (true) {
+    const scriptLine = scriptFile.readln();
+    if (scriptLine === undefined) break;
+    script += scriptLine + "\n";
+  }
+  const style = "* { margin: 0; padding: 0; overflow: none; }";
+  const popupHTML = String.$(<html><head><title>{caption}</title><style>{style}</style><script type="text/tiscript">{script}</script></head><body style="margin: 0; padding: 0; width: {w}px; height: {h}px;">);
+  return { popupHTML: popupHTML, w: w, h: h };
+}
+
+function createWindow(html, x, y, width, height) {
+  return view.window({ 
+    type: View.FRAME_WINDOW,
+    state: View.WINDOW_SHOWN,
+    html: html,
+    x: x, 
+    y: y, 
+    width: width, 
+    height: height
+  });
+}
+
+function parseElementLine(line) {
+  const [, element] = line.match(/Gui Add, (\w+),/) || [];
+  const [, x] = line.match(/x(\d+)/) || [];
+  const [, y] = line.match(/y(\d+)/) || [];
+  const [, w] = line.match(/w(\d+)/) || [];
+  const [, h] = line.match(/h(\d+)/) || [];
+  stdout.println("element:", element, "x:", x, "y:", y, "w:", w, "h:", h);
+  return { element: element.toLowerCase(), x: x, y: y, w: w, h: h };
+}
+
+$(li#menu-open) << event click {
+  const filename = view.selectFile(#open, "AutoHotkey Files (*.ahk)|*.AHK|All Files (*.*)|*.*", "ahk");
+  const file = Stream.openFile(filename);
+  const elements = [];
+  var html = "";
+  var width = "0px";
+  var height ="0px";
+  while (true) {
+    const line = file.readln();
+    if (line === undefined) break;
+    stdout.println(line);
+    if (/^Gui Add,/.test(line)) {
+      const element = parseElementLine(line);
+      elements.push(element);
+    }
+    if (/^Gui Show,/.test(line)) {
+      const { popupHTML, w, h } = parseWindowLine(line);
+      width = w;
+      height = h;
+      html = popupHTML;
+    }
+  }
+
+  for (var el in elements) {
+    const { element, x, y, w, h } = el;
+    html += String.$(<{element} style="position: absolute;);
+
+    if (x) html += String.$( left: {x}px;);
+    if (y) html += String.$( top: {y}px;);
+    if (w) html += String.$( width: {w}px;);
+    if (h) html += String.$( height: {h}px;);
+
+    html += String.$("></{element}>);
+  }
+
+  html += "</body></html>";
+
+  stdout.println(html);
+
+  const window = createWindow(html, 0, 0, width, height);
+
+  const outputFile = Stream.openFile("output.html", "w");
+  outputFile.println(html);
+}
