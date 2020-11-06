@@ -12,7 +12,7 @@ Basically, port `.ahk` over to `.html`.
 
 2. Convert the `.ahk` file created with the previous step into an `.html` file and open it with Sciter.
 
-![open](screenshots/open.gif);
+![open](screenshots/open.gif)
 
 ## Warning
 
