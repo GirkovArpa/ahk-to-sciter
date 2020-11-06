@@ -4,8 +4,9 @@
 SetWorkingDir %A_ScriptDir%
 SetBatchLines -1
 
-Gui Add, Button, x0 y0 w80 h23, &OK
+Gui Add, Button, x0 y0 w80 h23, Click me!
 Gui Add, Button, x424 y128 w80 h23, &OK
+Gui Add, Edit, x24 y64 w120 h21, Hello World!
 
 Gui Show, w506 h151, Window
 Return

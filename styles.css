@@ -4,6 +4,6 @@
 }
 
 body {
-  min-width: 800dip;
-  min-height: 600dip;
+  width: 100px;
+  height: 100px;
 }

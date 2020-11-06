@@ -35,8 +35,10 @@ function parseElementLine(line) {
   const [, y] = line.match(/y(\d+)/) || [];
   const [, w] = line.match(/w(\d+)/) || [];
   const [, h] = line.match(/h(\d+)/) || [];
+  const [, label] = line.match(/, ?&?([a-z !]+)$/i) || [];
+
   stdout.println("element:", element, "x:", x, "y:", y, "w:", w, "h:", h);
-  return { element: element.toLowerCase(), x: x, y: y, w: w, h: h };
+  return { element: element.toLowerCase(), x: x, y: y, w: w, h: h, label: label };
 }
 
 $(li#menu-open) << event click {
@@ -63,15 +65,21 @@ $(li#menu-open) << event click {
   }
 
   for (var el in elements) {
-    const { element, x, y, w, h } = el;
-    html += String.$(<{element} style="position: absolute;);
+    const { element, x, y, w, h, label } = el;
+    html += String.$(<{element == "edit" ? "input|text" : element} style="position: absolute;);
 
     if (x) html += String.$( left: {x}px;);
     if (y) html += String.$( top: {y}px;);
     if (w) html += String.$( width: {w}px;);
     if (h) html += String.$( height: {h}px;);
 
-    html += String.$("></{element}>);
+    if (element == "edit") {
+      html += String.$(" value="{label}");
+    } else {
+      html += String.$(");
+    }
+
+    html += String.$(>{label}</{element}>);
   }
 
   html += "</body></html>";
